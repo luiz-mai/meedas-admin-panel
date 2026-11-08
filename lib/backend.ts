@@ -39,7 +39,11 @@ export function backendOrigin() {
 }
 export async function backendRequest<T>(
   resource: string,
-  options?: { query?: URLSearchParams; mutation?: AdminMutation },
+  options?: {
+    query?: URLSearchParams;
+    mutation?: AdminMutation;
+    operation?: Record<string, unknown>;
+  },
 ): Promise<T> {
   const client = await serverSupabase();
   if (!client)
@@ -52,15 +56,19 @@ export async function backendRequest<T>(
   let response: Response;
   try {
     response = await fetch(url, {
-      method: options?.mutation ? "PATCH" : "GET",
+      method: options?.operation ? "POST" : options?.mutation ? "PATCH" : "GET",
       cache: "no-store",
       redirect: "error",
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
       headers: {
         Authorization: `Bearer ${data.session.access_token}`,
-        ...(options?.mutation ? { "Content-Type": "application/json" } : {}),
+        ...(options?.mutation || options?.operation
+          ? { "Content-Type": "application/json" }
+          : {}),
       },
-      ...(options?.mutation ? { body: JSON.stringify(options.mutation) } : {}),
+      ...(options?.mutation || options?.operation
+        ? { body: JSON.stringify(options.operation ?? options.mutation) }
+        : {}),
     });
   } catch {
     throw new BackendError(

@@ -1,3 +1,6 @@
+import { CrawlerConsole } from "@/components/crawler-console";
+import { backendRequest } from "@/lib/backend";
+import type { CrawlerConsoleData } from "@/contracts/crawler-ops";
 import { notFound } from "next/navigation";
 import { RefreshButton } from "@/components/refresh-button";
 import { ADMIN_SECTIONS, type AdminSection } from "@/contracts/admin-v1";
@@ -19,6 +22,12 @@ export default async function SectionPage({
   const query = new URLSearchParams();
   for (const key of ["page", "q", "status"])
     if (typeof search[key] === "string") query.set(key, search[key] as string);
+  if (section === "crawls")
+    return (
+      <CrawlerConsole
+        data={await backendRequest<CrawlerConsoleData>("crawler-ops")}
+      />
+    );
   const data = await adminPage(section as AdminSection, query);
   return (
     <>

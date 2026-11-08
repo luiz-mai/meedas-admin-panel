@@ -96,3 +96,41 @@ export async function editCatalog(
     };
   }
 }
+
+export async function crawlerOperation(
+  _: EditState,
+  form: FormData,
+): Promise<EditState> {
+  const operation: Record<string, unknown> = {};
+  for (const key of [
+    "action",
+    "program",
+    "reason",
+    "request_key",
+    "target_id",
+    "github_run_id",
+    "expected_updated_at",
+  ])
+    if (form.has(key)) operation[key] = String(form.get(key));
+  if (operation.action === "policy") {
+    operation.paused = form.get("paused") === "on";
+    operation.max_gemini_requests = Number(form.get("max_gemini_requests"));
+    operation.max_zenrows_requests = Number(form.get("max_zenrows_requests"));
+  }
+  try {
+    const result = await backendRequest<{ ok: boolean; message: string }>(
+      "crawler-ops",
+      { operation },
+    );
+    revalidatePath("/crawls");
+    return { ok: true, message: result.message };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof BackendError
+          ? error.message
+          : "Não foi possível concluir a operação.",
+    };
+  }
+}

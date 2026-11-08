@@ -23,12 +23,13 @@ test("anonymous requests and forged metadata never grant admin access", async ({
   await expect(page).toHaveURL(/\/login/);
   const verification = await request.post("http://127.0.0.1:3202/auth/v1/verify", { data: { email: "user@example.test", token: "123456" } });
   const normalSession = await verification.json();
-  for (const resource of ["overview", "users", "rates", "audit", "subscriptions"]) {
+  for (const resource of ["overview", "users", "rates", "audit", "subscriptions", "crawler-ops"]) {
     const denied = await request.get(`${backend}/${resource}`, { headers: { Authorization: `Bearer ${normalSession.access_token}` } });
     expect(denied.status()).toBe(403);
     expect(denied.headers()["cache-control"]).toContain("no-store");
   }
   expect((await request.patch(`${backend}/stores`, { headers: { Authorization: `Bearer ${normalSession.access_token}` }, data: { name: "forged" } })).status()).toBe(403);
+  expect((await request.post(`${backend}/crawler-ops`,{headers:{Authorization:`Bearer ${normalSession.access_token}`},data:{action:"collect"}})).status()).toBe(403);
   await login(page, "user@example.test");
   await expect(page).toHaveURL(/\/acesso-negado/);
   await expect(
@@ -89,7 +90,7 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
   for (const [section, title] of [
     ["programs", "Programas"],
     ["rates", "Pontuações e evidências"],
-    ["crawls", "Coletas"],
+    ["crawls", "Central de coletas"],
     ["users", "Usuários"],
     ["alerts", "Alertas"],
     ["deliveries", "Notificações"],
@@ -104,6 +105,26 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
       0,
     );
   }
+  await page.goto('/crawls');
+  await page.getByRole('button',{name:'Recuperação',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Coletar e publicar',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'Controles e consumo',exact:true}).click();
+  await page.getByLabel('Máx. chamadas Gemini').fill('32');
+  await page.getByLabel('Pausar próximas operações pagas').check();
+  await page.getByLabel('Motivo',{exact:true}).fill('Pausa preventiva para revisão operacional');
+  await page.getByRole('button',{name:'Salvar controles',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('concluída');
+  await page.getByRole('button',{name:'Visão geral',exact:true}).click();
+  await expect(page.getByText('Pausada',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Auditoria',exact:true}).click();
+  await expect(page.locator('.crawl-detail summary').filter({hasText:'Configuração'})).toBeVisible();
+  await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'Recuperação',exact:true}).click();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'test-results/crawler-mobile.png',fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.getByRole('button',{name:'Visão geral',exact:true}).click();
+  await page.screenshot({path:'test-results/crawler-desktop.png',fullPage:true});
   await page.goto("/rates");
   await page.locator("summary").first().click();
   await expect(
