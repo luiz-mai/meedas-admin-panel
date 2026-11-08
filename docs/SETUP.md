@@ -1,11 +1,13 @@
 # Implantação do painel administrativo
 
+Produção ativada em 08/11/2026: **https://admin.meedas.com.br**. O projeto Vercel é `meedas-admin-panel`, com Node.js 24 e as três variáveis abaixo configuradas em Production. A migration já foi aplicada no Supabase e a conta confirmada pelo proprietário já recebeu ADMIN. Os passos seguintes servem para novos ambientes e manutenção; não é necessário repeti-los no ambiente atual.
+
 O checkout existente é `meedas-admin-panel` (o dashboard mencionado no planejamento).
 Requer Node >=22. O painel é um cliente do backend; nenhuma chave administrativa do Supabase, Stripe ou crawler deve ser configurada neste projeto.
 
 ## Ordem de ativação
 
-1. No **meedas-app**, aplicar a migration `20261108145527_admin_dashboard.sql` depois das migrations anteriores. O `schema.sql` completo já a contém para instalações novas; não reaplicar o schema destrutivo em um banco existente.
+1. No **meedas-app**, aplicar a migration `20261108152134_admin_dashboard.sql` depois das migrations anteriores. O `schema.sql` completo já a contém para instalações novas; não reaplicar o schema destrutivo em um banco existente.
 2. Publicar o backend do meedas-app com `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY`. O endpoint `/api/admin/v1/session` deve responder 401 quando chamado sem token.
 3. Cadastrar os administradores via SQL confiável (abaixo).
 4. Importar este repositório na Vercel como aplicação Next.js. Configurar as três variáveis de `.env.example` com o mesmo projeto Supabase do app e a origem HTTPS do backend.
