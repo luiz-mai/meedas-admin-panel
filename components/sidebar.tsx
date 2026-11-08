@@ -51,7 +51,7 @@ export function Sidebar() {
         Pular para o conteúdo
       </a>
       <Link className="sidebar-brand" href="/overview">
-        <img src="/brand/wordmark.png" alt="Meedas" />
+        <img src="/brand/wordmark-transparent.png" alt="Meedas" />
         <span>admin</span>
       </Link>
       <nav aria-label="Navegação administrativa">

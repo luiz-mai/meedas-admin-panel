@@ -5,7 +5,7 @@ export default function Login() {
     <main className="login-page">
       <section className="login-story">
         <a href="https://app.meedas.com.br" className="brand">
-          <img src="/brand/wordmark.png" alt="Meedas" />
+          <img src="/brand/wordmark-transparent.png" alt="Meedas" />
         </a>
         <div>
           <span className="eyebrow">MEEDAS ADMIN</span>
