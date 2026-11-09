@@ -1,8 +1,9 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { supabaseConfig } from "./config";
-export async function serverSupabase() {
+export const serverSupabase = cache(async () => {
   const config = supabaseConfig();
   if (!config) return null;
   const jar = await cookies();
@@ -25,4 +26,4 @@ export async function serverSupabase() {
       },
     },
   });
-}
+});

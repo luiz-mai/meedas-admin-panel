@@ -22,9 +22,11 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await client.auth.getUser();
+  await client.auth.getClaims();
   return response;
 }
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)",
+  ],
 };
