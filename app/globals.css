@@ -1738,3 +1738,5 @@ summary:focus-visible {
   background: white;
   max-width: 100%;
 }
+
+.feedback-message {white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:12px 0;font-size:14px}

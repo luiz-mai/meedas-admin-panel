@@ -14,3 +14,7 @@ Configure `.env.local` conforme `.env.example`. Não há dados fictícios ou byp
 ### Desempenho
 
 O proxy usa validação de claims para renovação da sessão e não processa imagens/fontes. O cliente Supabase é deduplicado apenas dentro da renderização atual. A autorização ADMIN continua sendo resolvida pelo backend em todas as requisições, sem cache compartilhado de sessão ou dados privados. A tela de coletas usa uma rota própria para separar seu JavaScript das listagens administrativas.
+
+### Feedback
+
+A seção `/feedback` lista as mensagens enviadas por usuários autenticados do app, com categoria, página, remetente e data. Busca e filtro por tipo usam a API administrativa; a leitura completa aparece em “Detalhes”. A tabela não é exposta ao cliente Supabase público e o acesso exige ADMIN no backend.

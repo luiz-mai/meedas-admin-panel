@@ -11,6 +11,7 @@ export const ADMIN_SECTIONS = [
   "subscriptions",
   "risks",
   "audit",
+  "feedback",
 ] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 export type AdminRow = Record<string, unknown>;

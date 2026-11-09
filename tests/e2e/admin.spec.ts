@@ -21,15 +21,42 @@ test("anonymous requests and forged metadata never grant admin access", async ({
   ).toBe(401);
   await page.goto("/stores");
   await expect(page).toHaveURL(/\/login/);
-  const verification = await request.post("http://127.0.0.1:3202/auth/v1/verify", { data: { email: "user@example.test", token: "123456" } });
+  const verification = await request.post(
+    "http://127.0.0.1:3202/auth/v1/verify",
+    { data: { email: "user@example.test", token: "123456" } },
+  );
   const normalSession = await verification.json();
-  for (const resource of ["overview", "users", "rates", "audit", "subscriptions", "crawler-ops"]) {
-    const denied = await request.get(`${backend}/${resource}`, { headers: { Authorization: `Bearer ${normalSession.access_token}` } });
+  for (const resource of [
+    "overview",
+    "users",
+    "rates",
+    "audit",
+    "subscriptions",
+    "crawler-ops",
+    "feedback",
+  ]) {
+    const denied = await request.get(`${backend}/${resource}`, {
+      headers: { Authorization: `Bearer ${normalSession.access_token}` },
+    });
     expect(denied.status()).toBe(403);
     expect(denied.headers()["cache-control"]).toContain("no-store");
   }
-  expect((await request.patch(`${backend}/stores`, { headers: { Authorization: `Bearer ${normalSession.access_token}` }, data: { name: "forged" } })).status()).toBe(403);
-  expect((await request.post(`${backend}/crawler-ops`,{headers:{Authorization:`Bearer ${normalSession.access_token}`},data:{action:"collect"}})).status()).toBe(403);
+  expect(
+    (
+      await request.patch(`${backend}/stores`, {
+        headers: { Authorization: `Bearer ${normalSession.access_token}` },
+        data: { name: "forged" },
+      })
+    ).status(),
+  ).toBe(403);
+  expect(
+    (
+      await request.post(`${backend}/crawler-ops`, {
+        headers: { Authorization: `Bearer ${normalSession.access_token}` },
+        data: { action: "collect" },
+      })
+    ).status(),
+  ).toBe(403);
   await login(page, "user@example.test");
   await expect(page).toHaveURL(/\/acesso-negado/);
   await expect(
@@ -41,6 +68,7 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
   page,
   request,
 }) => {
+  test.setTimeout(120000); // Full multi-page journey includes cold dev compilation.
   await request.post("http://127.0.0.1:3202/__test/role");
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -48,7 +76,11 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
   await expect(
     page.getByRole("heading", { name: "A operação, em perspectiva." }),
   ).toBeVisible();
-  expect((await page.context().cookies()).filter(cookie => cookie.name.startsWith("sb-")).every(cookie => cookie.httpOnly)).toBe(true);
+  expect(
+    (await page.context().cookies())
+      .filter((cookie) => cookie.name.startsWith("sb-"))
+      .every((cookie) => cookie.httpOnly),
+  ).toBe(true);
   await expect(page.getByText("Parcial", { exact: true })).toBeVisible();
   await page.screenshot({
     path: "test-results/overview-desktop.png",
@@ -105,26 +137,46 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
       0,
     );
   }
-  await page.goto('/crawls');
-  await page.getByRole('button',{name:'Recuperação',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Coletar e publicar',exact:true})).toBeDisabled();
-  await page.getByRole('button',{name:'Controles e consumo',exact:true}).click();
-  await page.getByLabel('Máx. chamadas Gemini').fill('32');
-  await page.getByLabel('Pausar próximas operações pagas').check();
-  await page.getByLabel('Motivo',{exact:true}).fill('Pausa preventiva para revisão operacional');
-  await page.getByRole('button',{name:'Salvar controles',exact:true}).click();
-  await expect(page.getByRole('status')).toContainText('concluída');
-  await page.getByRole('button',{name:'Visão geral',exact:true}).click();
-  await expect(page.getByText('Pausada',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Auditoria',exact:true}).click();
-  await expect(page.locator('.crawl-detail summary').filter({hasText:'Configuração'})).toBeVisible();
-  await page.setViewportSize({width:390,height:844});
-  await page.getByRole('button',{name:'Recuperação',exact:true}).click();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.screenshot({path:'test-results/crawler-mobile.png',fullPage:true});
-  await page.setViewportSize({width:1440,height:1000});
-  await page.getByRole('button',{name:'Visão geral',exact:true}).click();
-  await page.screenshot({path:'test-results/crawler-desktop.png',fullPage:true});
+  await page.goto("/crawls");
+  await page.getByRole("button", { name: "Recuperação", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Coletar e publicar", exact: true }),
+  ).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Controles e consumo", exact: true })
+    .click();
+  await page.getByLabel("Máx. chamadas Gemini").fill("32");
+  await page.getByLabel("Pausar próximas operações pagas").check();
+  await page
+    .getByLabel("Motivo", { exact: true })
+    .fill("Pausa preventiva para revisão operacional");
+  await page
+    .getByRole("button", { name: "Salvar controles", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("concluída");
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await expect(page.getByText("Pausada", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Auditoria", exact: true }).click();
+  await expect(
+    page.locator(".crawl-detail summary").filter({ hasText: "Configuração" }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Recuperação", exact: true }).click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/crawler-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await page.screenshot({
+    path: "test-results/crawler-desktop.png",
+    fullPage: true,
+  });
   await page.goto("/rates");
   await page.locator("summary").first().click();
   await expect(
@@ -144,6 +196,28 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
     path: "test-results/overview-mobile.png",
     fullPage: true,
   });
+  await page.goto("/feedback");
+  await expect(
+    page.getByRole("heading", { name: "Feedback dos usuários" }),
+  ).toBeVisible();
+  await expect(
+    page
+      .locator("tbody .cell-value")
+      .filter({
+        hasText: "Gostaria de comparar minhas lojas favoritas no app.",
+      }),
+  ).toBeVisible();
+  await page.locator("tbody summary").first().click();
+  await expect(page.locator(".feedback-message")).toHaveText(
+    "Gostaria de comparar minhas lojas favoritas no app.",
+  );
+  await page
+    .getByRole("combobox", { name: "Filtrar por tipo de feedback" })
+    .selectOption("suggestion");
+  await page.getByRole("button", { name: "Filtrar", exact: true }).click();
+  await expect(
+    page.getByText("user@example.test", { exact: true }).first(),
+  ).toBeVisible();
   await request.post("http://127.0.0.1:3202/__test/role?revoke=true");
   await page.goto("/stores");
   await expect(page).toHaveURL(/\/acesso-negado/);

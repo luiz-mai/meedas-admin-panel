@@ -10,6 +10,24 @@ export const sections: Record<
     columns: [string, string][];
   }
 > = {
+  feedback: {
+    title: "Feedback dos usuários",
+    description: "Sugestões e problemas compartilhados pelo app.",
+    eyebrow: "CONTAS E RELACIONAMENTO",
+    search: "Buscar na mensagem",
+    filters: [
+      ["problem", "Algo não funcionou"],
+      ["suggestion", "Sugestões"],
+      ["other", "Outros assuntos"],
+    ],
+    columns: [
+      ["user_email", "Enviado por"],
+      ["category", "Tipo"],
+      ["message", "Mensagem"],
+      ["page_path", "Página"],
+      ["created_at", "Recebido em"],
+    ],
+  },
   overview: {
     title: "A operação, em perspectiva.",
     description: "Acompanhe o catálogo e saiba onde sua atenção faz diferença.",
@@ -185,6 +203,9 @@ export function valueAt(row: Record<string, unknown>, path: string): unknown {
     );
 }
 const translations: Record<string, string> = {
+  problem: "Algo não funcionou",
+  suggestion: "Sugestão",
+  other: "Outro assunto",
   published: "Publicada",
   failed: "Falha",
   running: "Em andamento",

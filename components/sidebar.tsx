@@ -10,6 +10,7 @@ import {
   Users,
   Bell,
   Mail,
+  MessageSquare,
   CreditCard,
   ShieldAlert,
   History,
@@ -31,6 +32,7 @@ const groups = [
     items: [
       ["users", "Usuários", Users],
       ["alerts", "Alertas", Bell],
+      ["feedback", "Feedback", MessageSquare],
       ["deliveries", "Notificações", Mail],
     ],
   },

@@ -48,10 +48,18 @@ export function DataTable({
               <SlidersHorizontal size={15} />
               <select
                 name="status"
-                aria-label="Filtrar por estado"
+                aria-label={
+                  data.section === "feedback"
+                    ? "Filtrar por tipo de feedback"
+                    : "Filtrar por estado"
+                }
                 defaultValue={status}
               >
-                <option value="">Todos os estados</option>
+                <option value="">
+                  {data.section === "feedback"
+                    ? "Todos os tipos"
+                    : "Todos os estados"}
+                </option>
                 {config.filters.map(([value, label]) => (
                   <option value={value} key={value}>
                     {label}
@@ -204,8 +212,16 @@ function TableRow({ row, data }: { row: AdminRow; data: AdminPage }) {
         <details className="row-details">
           <summary>Detalhes</summary>
           <div className="record-detail">
-            <strong>Registro completo</strong>
-            <pre>{JSON.stringify(row, null, 2)}</pre>
+            <strong>
+              {data.section === "feedback"
+                ? "Mensagem completa"
+                : "Registro completo"}
+            </strong>
+            {data.section === "feedback" ? (
+              <p className="feedback-message">{String(row.message ?? "")}</p>
+            ) : (
+              <pre>{JSON.stringify(row, null, 2)}</pre>
+            )}
             {data.section === "users" && (
               <Link className="text-button" href={`/alerts?q=${row.id}`}>
                 Consultar alertas desta conta →
