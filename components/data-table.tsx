@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { AdminPage, AdminRow } from "@/contracts/admin-v1";
 import { sections, display, valueAt, badgeTone } from "@/lib/presentation";
+import { CancelSubscription } from "./cancel-subscription";
 import { EditCatalog } from "./edit-catalog";
 export function DataTable({
   data,
@@ -99,7 +100,14 @@ export function DataTable({
             <tbody>
               {data.rows.map((row, index) => (
                 <TableRow
-                  key={String(row.id ?? row.event_id ?? row.user_id ?? index)}
+                  key={String(
+                    row.id ??
+                      row.event_id ??
+                      (data.section === "subscriptions"
+                        ? `${row.user_id}:${row.livemode}`
+                        : row.user_id) ??
+                      index,
+                  )}
                   row={row}
                   data={data}
                 />
@@ -242,6 +250,17 @@ function TableRow({ row, data }: { row: AdminRow; data: AdminPage }) {
                 Abrir cliente na Stripe <ExternalLink size={14} />
               </a>
             )}
+            {data.section === "subscriptions" &&
+            typeof row.user_id === "string" &&
+            typeof row.subscription_id === "string" &&
+            typeof row.livemode === "boolean" ? (
+              <CancelSubscription
+                key={row.subscription_id}
+                userId={row.user_id}
+                subscriptionId={row.subscription_id}
+                livemode={row.livemode}
+              />
+            ) : null}
             {(data.section === "stores" || data.section === "programs") && (
               <EditCatalog
                 resource={data.section}

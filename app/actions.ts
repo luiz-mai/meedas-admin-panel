@@ -134,3 +134,41 @@ export async function crawlerOperation(
     };
   }
 }
+
+export async function cancelSubscription(
+  _: EditState,
+  form: FormData,
+): Promise<EditState> {
+  try {
+    const result = await backendRequest<{ ok: boolean; message: string }>(
+      "subscriptions",
+      {
+        operation: {
+          action: "cancel_now",
+          userId: String(form.get("userId")),
+          subscriptionId: String(form.get("subscriptionId")),
+          livemode: form.get("livemode") === "true",
+          confirmed: form.get("confirmed") === "on",
+          reason: String(form.get("reason") ?? ""),
+        },
+      },
+    );
+    for (const path of [
+      "/subscriptions",
+      "/users",
+      "/alerts",
+      "/overview",
+      "/audit",
+    ])
+      revalidatePath(path);
+    return { ok: true, message: result.message };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof BackendError
+          ? error.message
+          : "Não foi possível concluir. Atualize a página e tente novamente.",
+    };
+  }
+}

@@ -1740,3 +1740,11 @@ summary:focus-visible {
 }
 
 .feedback-message {white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:12px 0;font-size:14px}
+
+.subscription-dialog {margin:auto;max-width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #e8dfc6;border-radius:20px;padding:28px;color:var(--ink);background:#fffefa;box-shadow:0 24px 80px #17120a33}
+.subscription-dialog::backdrop {background:#17120a66}
+.subscription-dialog h2 {font-size:23px;margin:0 0 16px}
+.subscription-dialog>p {font-size:13px;line-height:1.7;margin:0 0 14px}
+.subscription-dialog .mono {overflow-wrap:anywhere;font-size:11px}
+.subscription-dialog-actions {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}
+.subscription-dialog .edit-form {margin-top:20px}

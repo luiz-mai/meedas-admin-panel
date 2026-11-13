@@ -57,6 +57,14 @@ test("anonymous requests and forged metadata never grant admin access", async ({
       })
     ).status(),
   ).toBe(403);
+  expect(
+    (
+      await request.post(`${backend}/subscriptions`, {
+        headers: { Authorization: `Bearer ${normalSession.access_token}` },
+        data: { action: "cancel_now" },
+      })
+    ).status(),
+  ).toBe(403);
   await login(page, "user@example.test");
   await expect(page).toHaveURL(/\/acesso-negado/);
   await expect(
@@ -137,6 +145,38 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
       0,
     );
   }
+  await page.goto("/subscriptions");
+  await page
+    .locator("summary")
+    .filter({ hasText: /^Detalhes$/ })
+    .click();
+  await page.getByRole("button", { name: "Cancelar assinatura agora" }).click();
+  const cancelDialog = page.getByRole("dialog", {
+    name: "Encerrar assinatura e Plus?",
+  });
+  await expect(cancelDialog).toBeVisible();
+  await expect(cancelDialog).toContainText("não solicita reembolso");
+  await cancelDialog
+    .getByRole("button", { name: "Confirmar encerramento" })
+    .click();
+  expect(
+    await cancelDialog
+      .locator("form")
+      .evaluate((form: HTMLFormElement) => form.checkValidity()),
+  ).toBe(false);
+  await cancelDialog
+    .getByLabel("Justificativa")
+    .fill("Encerramento solicitado pelo titular");
+  await cancelDialog.getByRole("checkbox").check();
+  expect(
+    await cancelDialog
+      .locator("form")
+      .evaluate((form: HTMLFormElement) => form.checkValidity()),
+  ).toBe(true);
+  await cancelDialog
+    .getByRole("button", { name: "Voltar", exact: true })
+    .click();
+  await expect(cancelDialog).not.toBeVisible();
   await page.goto("/crawls");
   await page.getByRole("button", { name: "Recuperação", exact: true }).click();
   await expect(
@@ -201,11 +241,9 @@ test("ADMIN can inspect real local data, edit a store atomically, inspect audit 
     page.getByRole("heading", { name: "Feedback dos usuários" }),
   ).toBeVisible();
   await expect(
-    page
-      .locator("tbody .cell-value")
-      .filter({
-        hasText: "Gostaria de comparar minhas lojas favoritas no app.",
-      }),
+    page.locator("tbody .cell-value").filter({
+      hasText: "Gostaria de comparar minhas lojas favoritas no app.",
+    }),
   ).toBeVisible();
   await page.locator("tbody summary").first().click();
   await expect(page.locator(".feedback-message")).toHaveText(

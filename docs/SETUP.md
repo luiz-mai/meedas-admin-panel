@@ -69,3 +69,10 @@ Testes verificam login OTP local, usuário comum rejeitado mesmo com metadata AD
 - As datas usam America/Sao_Paulo. Dados de teste/produção de assinaturas são identificados separadamente.
 - Estados de plano são os persistidos; não se presume acesso efetivo ou receita a partir de uma linha de assinatura. Não há métricas de receita inventadas.
 - A interface apresenta a cobertura persistida no banco. Motivos detalhados de lojas ignoradas que existam apenas em artefatos do GitHub ainda exigem consulta ao crawler.
+
+
+### Encerramento imediato de assinatura
+
+Em **Assinaturas → Detalhes → Cancelar assinatura agora**, informe uma justificativa e confirme o encerramento. O backend valida ADMIN, ambiente e titularidade do contrato, registra a intenção antes de falar com a Stripe e grava o estado confirmado junto da auditoria. Não há chave Stripe nem acesso privilegiado ao banco no dashboard.
+
+O encerramento é imediato e não solicita reembolso nem cobra proporcionalidade. O acesso volta ao gratuito e os alertas excedentes são pausados, preservando as configurações. Contratos já cancelados na Stripe podem ser sincronizados pela mesma ação. Cada ambiente opera apenas suas próprias assinaturas; registros de teste não podem ser cancelados com credenciais live. O cancelamento agendado pelo app continua mantendo o acesso até o fim do período.
